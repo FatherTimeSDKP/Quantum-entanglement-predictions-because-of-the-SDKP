@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Rocket, BarChart3, Target, Atom } from "lucide-react"
 import ExperimentalValidator from "@/components/experimental-validator"
+import LicensingInfo from "@/components/licensing-info"
 
 interface Particle {
   N: number
@@ -322,6 +323,18 @@ export default function QuantumSimulator() {
             Quantum SDKP Framework Simulations
           </h1>
           <p className="text-lg opacity-90">Shape-Density-Kinematic Principle + SD&N + QCC Integration</p>
+          <div className="mt-4 p-4 bg-black/20 rounded-lg border border-white/30">
+            <div className="text-sm opacity-90 mb-2">Official NFT License Domain:</div>
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-lg font-mono text-blue-300">🌐 fathertimesdkp.blockchain</span>
+              <Badge variant="outline" className="text-xs">
+                via Unstoppable Domains
+              </Badge>
+            </div>
+            <div className="text-xs opacity-75 mt-2">
+              Canonical reference for Commercial, Residential, and Individual/AI licensing terms
+            </div>
+          </div>
         </div>
 
         {/* Control Panel */}
@@ -463,6 +476,9 @@ export default function QuantumSimulator() {
 
         {/* Experimental Validation */}
         <ExperimentalValidator />
+
+        {/* Official Licensing Information */}
+        <LicensingInfo />
       </div>
     </div>
   )
