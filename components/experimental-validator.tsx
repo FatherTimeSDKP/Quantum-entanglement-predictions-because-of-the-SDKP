@@ -97,9 +97,6 @@ export default function ExperimentalValidator() {
             <FlaskConical className="w-5 h-5" />
             Experimental Validation Suite
           </CardTitle>
-          <div className="text-xs opacity-75 mt-1">
-            Licensed under: <span className="text-blue-300 font-mono">fathertimesdkp.blockchain</span>
-          </div>
         </CardHeader>
         <CardContent>
           <Button
