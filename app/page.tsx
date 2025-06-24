@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Rocket, BarChart3, Target, Atom } from "lucide-react"
-import ExperimentalValidator from "@/components/experimental-validator"
 
 interface Particle {
   N: number
@@ -246,66 +245,6 @@ export default function QuantumSimulator() {
     setIsRunning(false)
   }
 
-  const runMeasurementPredictions = async () => {
-    setIsRunning(true)
-    clearConsole()
-    addConsoleOutput("🎯 Running Measurement Predictions based on Experimental Data...")
-
-    // Based on your experimental validation results
-    const optimalNodes = [
-      { N: 14.91, S: 4.7, expectedEnergy: 15.83 },
-      { N: 19.06, S: 3.9, expectedEnergy: 15.2 },
-      { N: 12.37, S: 4.48, expectedEnergy: 13.49 },
-      { N: 8.12, S: 4.85, expectedEnergy: 11.33 },
-      { N: 3.96, S: 3.03, expectedEnergy: 4.6 },
-    ]
-
-    const predictions: AnalysisResult[] = []
-
-    for (let i = 0; i < optimalNodes.length; i++) {
-      const node = optimalNodes[i]
-      const particle1: Particle = {
-        N: node.N,
-        S: node.S,
-        D: 1.0,
-        v: 29780, // Earth orbital velocity
-        shape: 1.0,
-        dimension: 2,
-        number: 1,
-      }
-      const particle2: Particle = {
-        N: node.N,
-        S: node.S,
-        D: 1.0,
-        v: 29780,
-        shape: -1.0,
-        dimension: 2,
-        number: 1,
-      }
-      const spacetime1: SpaceTime = { x: 0, y: 0, z: 0, t: 0 }
-      const spacetime2: SpaceTime = { x: 1000, y: 0, z: 0, t: 1e-6 }
-
-      const analysis = simulator.fullEntanglementAnalysis(particle1, particle2, spacetime1, spacetime2)
-      predictions.push(analysis)
-
-      addConsoleOutput(`🔮 Node ${i + 1}: N=${node.N}, S=${node.S} → Confidence: ${analysis.confidence.toFixed(3)}`)
-      addConsoleOutput(`   Expected Energy: ${node.expectedEnergy} GJ, Entangled: ${analysis.entangled}`)
-    }
-
-    const highConfidencePredictions = predictions.filter((p) => p.confidence > 0.8).length
-    const avgConfidence = predictions.reduce((sum, p) => sum + p.confidence, 0) / predictions.length
-
-    setStats({
-      "Predictions Made": predictions.length.toString(),
-      "High Confidence": highConfidencePredictions.toString(),
-      "Avg Confidence": avgConfidence.toFixed(3),
-      "Peak Node": "N=14.91, S=4.70",
-    })
-
-    setResults(predictions)
-    setIsRunning(false)
-  }
-
   const getConfidenceColor = (confidence: number) => {
     if (confidence > 0.8) return "text-green-400"
     if (confidence > 0.5) return "text-yellow-400"
@@ -354,13 +293,6 @@ export default function QuantumSimulator() {
                 className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
               >
                 Multi-Scenario Tests
-              </Button>
-              <Button
-                onClick={runMeasurementPredictions}
-                disabled={isRunning}
-                className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600"
-              >
-                Measurement Predictions
               </Button>
             </div>
             {isRunning && (
@@ -460,9 +392,6 @@ export default function QuantumSimulator() {
             </CardContent>
           </Card>
         )}
-
-        {/* Experimental Validation */}
-        <ExperimentalValidator />
       </div>
     </div>
   )
