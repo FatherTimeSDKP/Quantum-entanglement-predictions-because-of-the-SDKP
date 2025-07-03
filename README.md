@@ -1,155 +1,139 @@
-# Image Analysis
-import json
-import numpy as np
-import math
-from typing import Dict, List, Tuple, Any, Optional
-from dataclasses import dataclass
-import logging
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
-import multiprocessing as mp
-from functools import partial
-import time
-from itertools import product
-import warnings
-warnings.filterwarnings(‘ignore’, category=RuntimeWarning)
-
-@dataclass
-class SensitivityResults:
-“”“Container for sensitivity analysis results”””
-parameter_impacts: Dict[str, float]
-interaction_effects: Dict[str, float]
-component_sensitivities: Dict[str, Dict[str, float]]
-correlation_matrix: np.ndarray
-parameter_names: List[str]
-total_variance_explained: float
-
-@dataclass
-class OptimizedSimulationResults:
-“”“Container for optimized simulation results with performance metrics”””
-entanglement_values: List[float]
-correlation_coefficients: List[float]
-numerical_mappings: Dict[str, Any]
-lambda_contributions: Dict[str, float]
-polarization_data: List[Dict[str, Any]]
-sensitivity_analysis: Optional[SensitivityResults]
-performance_metrics: Dict[str, Any]
-
-class OptimizedQuantumEntanglementSimulator:
-“””
-Enhanced quantum entanglement simulator with sensitivity analysis and optimization
-“””
-
-```
-def __init__(self, config: Dict[str, Any]):
-    self.config = config
-    self.setup_logging()
-    self.validate_config()
-    self._precompute_cache = {}
-    
-def setup_logging(self):
-    """Initialize logging with performance tracking"""
-    if self.config.get('parameters', {}).get('logging', False):
-        logging.basicConfig(
-            level=logging.INFO, 
-            format='%(asctime)s - %(levelname)s: %(message)s'
-        )
-        self.logger = logging.getLogger(__name__)
-    else:
-        self.logger = None
-        
-def validate_config(self):
-    """Enhanced configuration validation"""
-    required_keys = ['polarization_angles_deg', 'numerical_signatures', 'lambda_weights']
-    params = self.config.get('parameters', {})
-    
-    for key in required_keys:
-        if key not in params:
-            raise ValueError(f"Missing required parameter: {key}")
-            
-    # Validate and normalize lambda weights
-    weights = params['lambda_weights']
-    total_weight = sum(weights.values())
-    if abs(total_weight - 1.0) > 1e-6:
-        self.log(f"Normalizing lambda weights from {total_weight:.6f} to 1.0")
-        for key in weights:
-            weights[key] /= total_weight
-            
-    # Validate required weight keys
-    required_weight_keys = ['C_SDN', 'VEI_delta', 'QF_delta']
-    for key in required_weight_keys:
-        if key not in weights:
-            raise ValueError(f"Missing lambda weight: {key}")
-
-def log(self, message: str, level: str = 'info'):
-    """Enhanced logging with levels"""
-    if self.logger:
-        getattr(self.logger, level.lower())(message)
-    elif level.lower() in ['warning', 'error']:
-        print(f"[{level.upper()}] {message}")
-
-@staticmethod
-def calculate_numerical_signature_value_vectorized(signatures: List[str]) -> np.ndarray:
-    """Vectorized numerical signature calculation for performance"""
-    def process_single_signature(signature: str) -> float:
-        clean_signature = ''.join(filter(str.isdigit, str(signature)))
-        if not clean_signature:
-            return 0.5
-            
-        digit_sum = sum(int(d) for d in clean_signature)
-        positional_weight = sum(int(d) * (i + 1) for i, d in enumerate(clean_signature))
-        length_factor = len(clean_signature) / 10.0
-        normalized_value = (digit_sum + positional_weight * 0.1 + length_factor) % 1.0
-        return normalized_value
-    
-    return np.array([process_single_signature(sig) for sig in signatures])
-
-def calculate_numerical_signature_value(self, signature: str) -> float:
-    """Original method maintained for compatibility"""
-    if signature in self._precompute_cache:
-        return self._precompute_cache[signature]
-        
-    clean_signature = ''.join(filter(str.isdigit, str(signature)))
-    if not clean_signature:
-        result = 0.5
-    else:
-        digit_sum = sum(int(d) for d in clean_signature)
-        positional_weight = sum(int(d) * (i + 1) for i, d in enumerate(clean_signature))
-        length_factor = len(clean_signature) / 10.0
-        result = (digit_sum + positional_weight * 0.1 + length_factor) % 1.0
-    
-    self._precompute_cache[signature] = result
-    return result
-
-def apply_mapping_function(self, value: float, mapping_type: str) -> float:
-    """Apply transformation mapping with caching"""
-    cache_key = (value, mapping_type)
-    if cache_key in self._precompute_cache:
-        return self._precompute_cache[cache_key]
-        
-    value = max(0.0, min(1.0, value))
-    
-    if mapping_type == 'linear':
-        result = value
-    elif mapping_type == 'nonlinear':
-        result = np.sin(value * np.pi) ** 2
-    elif mapping_type == 'hybrid':
-        result = 0.5 * value + 0.5 * np.sin(value * np.pi) ** 2
-    else:
-        result = value
-        
-    self._precompute_cache[cache_key] = result
-    return result
-
-def calculate_entanglement_measure_optimized(self, angle_deg: float, signature: str, 
-                                           detailed_logging: bool = False) -> Tuple[float, Dict[str, float]]:
-    """Optimized entanglement calculation with optional detailed logging"""
-    if detailed_logging:
-        return self.calculate_entanglement_measure_detailed(angle_deg, signature)
-    
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Eigenvector Clustering & 3D Interactive Stability Basins\n",
+    "\n",
+    "This notebook analyzes your SD&N resonance permutations by:\n",
+    "- Building coupling matrices\n",
+    "- Computing eigenvectors and spectral radii\n",
+    "- Clustering permutations by eigenvector similarity\n",
+    "- Visualizing stability basins in interactive 3D plots\n",
+    "\n",
+    "### Requirements:\n",
+    "- numpy\n",
+    "- scikit-learn\n",
+    "- plotly"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "# Imports\n",
+    "import numpy as np\n",
+    "import plotly.express as px\n",
+    "from itertools import permutations\n",
+    "from sklearn.cluster import AgglomerativeClustering\n",
+    "from sklearn.metrics.pairwise import cosine_similarity\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "# Resonance codes\n",
+    "codes = np.array([7146, 1467, 4671, 6714])\n",
+    "\n",
+    "def build_coupling_matrix(order):\n",
+    "    n = len(order)\n",
+    "    matrix = np.zeros((n, n))\n",
+    "    for i in range(n):\n",
+    "        for j in range(n):\n",
+    "            if i == j:\n",
+    "                matrix[i, j] = 1.0  # Self coupling\n",
+    "            else:\n",
+    "                diff = abs(order[i] - order[j])\n",
+    "                matrix[i, j] = 1 / (diff + 1e-3)\n",
+    "    return matrix\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "# Get all permutations\n",
+    "perms = list(permutations(codes))\n",
+    "\n",
+    "# Compute eigenvalues and eigenvectors\n",
+    "eigenvectors = []\n",
+    "spectral_radii = []\n",
+    "for perm in perms:\n",
+    "    matrix = build_coupling_matrix(np.array(perm))\n",
+    "    eigvals, eigvecs = np.linalg.eig(matrix)\n",
+    "    spectral_radii.append(np.max(np.abs(eigvals)))\n",
+    "    # Flatten real parts of eigenvectors for similarity\n",
+    "    eigvecs_flat = eigvecs.real.flatten()\n",
+    "    eigenvectors.append(eigvecs_flat)\n",
+    "\n",
+    "eigenvectors = np.array(eigenvectors)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "# Compute cosine similarity matrix between eigenvector sets\n",
+    "similarity_matrix = cosine_similarity(eigenvectors)\n",
+    "\n",
+    "# Cluster permutations using Agglomerative Clustering\n",
+    "clustering = AgglomerativeClustering(n_clusters=3, affinity='precomputed', linkage='average')\n",
+    "labels = clustering.fit_predict(1 - similarity_matrix)  # distance = 1 - similarity\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "# Prepare data for 3D plot\n",
+    "import plotly.express as px\n",
+    "\n",
+    "x = list(range(len(perms)))\n",
+    "y = spectral_radii\n",
+    "z = labels\n",
+    "\n",
+    "# Create hover text for permutations\n",
+    "hover_text = [str(perm) for perm in perms]\n",
+    "\n",
+    "# Plot interactive 3D scatter\n",
+    "fig = px.scatter_3d(\n",
+    "    x=x,\n",
+    "    y=y,\n",
+    "    z=z,\n",
+    "    color=z.astype(str),\n",
+    "    labels={'x': 'Permutation Index', 'y': 'Spectral Radius', 'z': 'Cluster Label'},\n",
+    "    hover_name=hover_text,\n",
+    "    title=\"3D Interactive Stability Basin & Eigenvector Clustering\"\n",
+    ")\n",
+    "\n",
+    "fig.update_traces(marker=dict(size=8))\n",
+    "fig.show()"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "name": "python",
+   "version": "3.10"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
     # Fast calculation without logging
     angle_rad = math.radians(angle_deg)
     signature_value = self.calculate_numerical_signature_value(signature)
-    
+    Save this JSON as Eigenvector_Clustering_Stability_Basins.ipynb.
+	•	Upload it to IBM Quantum Lab or any Jupyter environment.
+	•	Run cells sequentially; the final output is an interactive 3D plot.
+
     # SDKP time τ_s
     use_sdkp_time = self.config['parameters'].get('use_sdkp_time', False)
     if use_sdkp_time:
