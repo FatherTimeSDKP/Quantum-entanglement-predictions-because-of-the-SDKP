@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite as below."
+title: "Quantum Entanglement Predictions Based on SDKP"
+authors:
+  - family-names: "Smith"
+    given-names: "Donald Paul"
+    orcid: "0009-0003-7925-1653"
+  - given-names: "FatherTimeSDKP"
+    family-names: ""
+version: "v1"
+doi: "10.5281/zenodo.15745609"
+date-released: "2025-07-05"
+url: "https://github.com/FatherTimeSDKP/Quantum-entanglement-predictions-because-of-the-SDKP"
+license: "Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0) Force‑Citation"
